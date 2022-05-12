@@ -3,6 +3,7 @@ use rustc_hash::FxHashMap;
 // necessary for the TokenStream::from_str() implementation
 use std::str::FromStr;
 
+extern crate proc_macro;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::ItemStruct;
@@ -77,10 +78,18 @@ const VALID_METHODS: [&str; 31] = [
 ];
 "#;
 
+use mac::show_tokens;
+
 fn main() {
+    show_tokens!(["bruce", "says", "hi"]);
+}
+
+fn _main2() {
     let mut buckets = FxHashMap::<usize, Vec<String>>::default();
     let tokens = TokenStream::from_str(VMETHODS).unwrap();
     let ast: syn::Item = syn::parse2(tokens).unwrap();
+    println!("{:?}", ast);
+
     match ast {
         syn::Item::Const(item_const) => {
             println!("{:?}", item_const.ty);
@@ -105,7 +114,7 @@ fn main() {
                     let mut keys: Vec<usize> = buckets.keys().cloned().collect();
                     keys.sort_unstable();
                     for key in keys {
-                        println!("=>{} {:?}", key, buckets.get(&key).unwrap());
+                        println!("=> {} {:?}", key, buckets.get(&key).unwrap());
                     }
                 },
                 _ => (),
