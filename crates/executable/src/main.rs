@@ -42,7 +42,7 @@ const _VALID_METHODS: [&str; 31] = [
     "VERSION-CONTROL",
 ];
 
-const VMETHODS: &str = r#"
+const _VMETHODS: &str = r#"
 const VALID_METHODS: [&str; 31] = [
     "ACL",
     "BASELINE-CONTROL",
@@ -78,15 +78,30 @@ const VALID_METHODS: [&str; 31] = [
 ];
 "#;
 
-use mac::show_tokens;
+const WORDS: [&str; 3] = [
+    "bruce",
+    "heihei",
+    "zane",
+];
+
+use mac::{show_tokens, sorted_strings, make_function};
 
 fn main() {
-    show_tokens!(["bruce", "says", "hi"]);
+    //show_tokens!(const x: [&str; 3] = ["bruce", "says", "hi"];);
+    let func = sorted_strings!(const WORDS: [&str; 3] = [
+        "bruce",
+        "heihei",
+        "zane",
+    ];);
+
+    make_function!(fn double(usize) -> usize);
+
+    println!("double(77) is {}", double(77));
 }
 
 fn _main2() {
     let mut buckets = FxHashMap::<usize, Vec<String>>::default();
-    let tokens = TokenStream::from_str(VMETHODS).unwrap();
+    let tokens = TokenStream::from_str(_VMETHODS).unwrap();
     let ast: syn::Item = syn::parse2(tokens).unwrap();
     println!("{:?}", ast);
 
@@ -124,7 +139,7 @@ fn _main2() {
     }
 }
 
-fn _main() {
+fn _main1() {
     // struct sample
     let s = "struct Point { x : u16 , y : u16 }";
 
