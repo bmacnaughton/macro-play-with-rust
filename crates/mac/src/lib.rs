@@ -250,9 +250,15 @@ pub fn words_list(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     //let inputs: TokenStream = inputs.into_iter();
     let len = strings.len();
-    quote!(
+    let q = quote!(
         const TEST: [&str; #len] = [#(#strings),*];
-    ).into()
+    );
+    let q2 = quote!(
+        const T2: [&str; #len] = [#(#strings),*];
+    );
+    let stream: [TokenStream; 2] = [q.into(), q2.into()];
+    stream.into_iter().collect()
+    //q.into()
 }
 
 /**

@@ -114,7 +114,7 @@ fn main() {
     //words_list("bruce", "bruc", "bru",);
     words_list!("bruce", "bruc", "bru",);
 
-    println!("TEST = {:?}", TEST);
+    println!("TEST = {:?}, T2 = {:?}", TEST, T2);
 
     // error:
     // /println!("item_struct2 {:?}", item_struct2!( { bruce: u32 } ));
