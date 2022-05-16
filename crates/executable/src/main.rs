@@ -112,9 +112,9 @@ fn main() {
     // TokenStream [Ident { sym: pub }, Ident { sym: fn }, Ident { sym: get_query_type }, Group { delimiter: Parenthesis, stream: TokenStream [Ident { sym: s }, Punct { char: ':', spacing: Alone }, Punct { char: '&', spacing: Alone }, Ident { sym: str }] }, Punct { char: '-', spacing: Joint }, Punct { char: '>', spacing: Alone }, Ident { sym: Option }, Punct { char: '<', spacing: Alone }, Ident { sym: QueryType }, Punct { char: '>', spacing: Alone }]
 
     //words_list("bruce", "bruc", "bru",);
-    words_list!("bruce", "bruc", "bru",);
+    words_list!(get_t2, "bruce", "bruc", "bru",);
 
-    println!("TEST = {:?}, T2 = {:?}, T2.len() = {}", TEST, T2, get_T2_len());
+    println!("TEST = {:?}, T2 = {:?}, T2.len() = {}", TEST, T2, get_t2());
 
     // error:
     // /println!("item_struct2 {:?}", item_struct2!( { bruce: u32 } ));

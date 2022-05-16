@@ -9,6 +9,9 @@ use proc_macro::{
     TokenStream,
     TokenTree,
 };
+use proc_macro2:: {
+    Span,
+};
 use quote::{format_ident, quote};
 use syn::{
     ItemStruct,
@@ -218,13 +221,24 @@ pub fn words_list(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     #[derive(PartialEq)]
     enum State {
+        NeedIdent,
+        NeedComma,
         NeedLiteral,
         MaybeComma,
     }
 
-    let mut state = State::NeedLiteral;
+
+    let mut state = State::NeedIdent;
+    let mut identifier: Option<proc_macro::Ident> = None;
     for input in inputs {
         match input {
+            TokenTree::Ident(ident) => {
+                if state != State::NeedIdent {
+                    panic!("needed identifier");
+                }
+                identifier = Some(ident);
+                state = State::NeedComma;
+            },
             TokenTree::Literal(lit) => {
                 if state != State::NeedLiteral {
                     panic!("expected literal str");
@@ -236,11 +250,15 @@ pub fn words_list(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 state = State::MaybeComma;
             },
             TokenTree::Punct(punc) => {
-                if state != State::MaybeComma {
+                if state != State::MaybeComma && state != State::NeedComma {
                     panic!("expected comma");
                 }
                 println!("punct thing {:?}", punc.to_string());
-                state = State::NeedLiteral;
+                state = if state == State::NeedComma {
+                    State::NeedLiteral
+                } else {
+                    State::NeedLiteral
+                };
             },
             _ => {
                 panic!("didn't expect the spanish inquisition");
@@ -257,13 +275,18 @@ pub fn words_list(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         const T2: [&str; #len] = [#(#strings),*];
     );
 
+    let mut func_name = Ident::new("get_t2_len", Span::call_site());
+    if let Some(ident) = identifier {
+        let ident = ident.to_string();
+        println!("the ident string {}", ident);
+        func_name = Ident::new(&ident, Span::call_site());
+    }
     let q3 = quote!(
-        fn get_T2_len() -> usize {
+        fn #func_name() -> usize {
             T2.len()
         }
     );
     let stream: [TokenStream; 3] = [q.into(), q2.into(), q3.into()];
-    //let stream: [TokenStream; 2] = [q.into(), q2.into()];
     stream.into_iter().collect()
 }
 
