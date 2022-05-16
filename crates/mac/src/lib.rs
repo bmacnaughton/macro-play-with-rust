@@ -230,8 +230,8 @@ pub fn words_list(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 if state != State::NeedLiteral {
                     panic!("expected literal str");
                 }
-                let s: String = lit.to_string();
-                strings.push(s.clone());
+                let s = lit.to_string();
+                strings.push(s[1..s.len() - 1].to_string());
                 println!("literal thing {:?}", s);
                 state = State::MaybeComma;
             },
