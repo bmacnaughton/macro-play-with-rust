@@ -216,7 +216,6 @@ pub fn words_list(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let inputs = input.clone().into_iter().collect::<Vec<_>>();
     let mut strings = Vec::<String>::new();
 
-    //let thing = syn::parse_macro_input!(input as WordsList);
     #[derive(PartialEq)]
     enum State {
         NeedLiteral,
@@ -231,6 +230,7 @@ pub fn words_list(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     panic!("expected literal str");
                 }
                 let s = lit.to_string();
+                // remove the quotes around the quoted string literal
                 strings.push(s[1..s.len() - 1].to_string());
                 println!("literal thing {:?}", s);
                 state = State::MaybeComma;
@@ -256,9 +256,15 @@ pub fn words_list(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let q2 = quote!(
         const T2: [&str; #len] = [#(#strings),*];
     );
-    let stream: [TokenStream; 2] = [q.into(), q2.into()];
+
+    let q3 = quote!(
+        fn get_T2_len() -> usize {
+            T2.len()
+        }
+    );
+    let stream: [TokenStream; 3] = [q.into(), q2.into(), q3.into()];
+    //let stream: [TokenStream; 2] = [q.into(), q2.into()];
     stream.into_iter().collect()
-    //q.into()
 }
 
 /**

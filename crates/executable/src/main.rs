@@ -114,7 +114,7 @@ fn main() {
     //words_list("bruce", "bruc", "bru",);
     words_list!("bruce", "bruc", "bru",);
 
-    println!("TEST = {:?}, T2 = {:?}", TEST, T2);
+    println!("TEST = {:?}, T2 = {:?}, T2.len() = {}", TEST, T2, get_T2_len());
 
     // error:
     // /println!("item_struct2 {:?}", item_struct2!( { bruce: u32 } ));
