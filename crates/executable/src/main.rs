@@ -84,7 +84,9 @@ const WORDS: [&str; 3] = [
     "zane",
 ];
 
-use mac::{show_tokens, sorted_strings, make_function};
+use mac::{
+    show_token_stream, sorted_strings, make_function, words_list, item_struct2
+};
 
 fn main() {
     //show_tokens!(const x: [&str; 3] = ["bruce", "says", "hi"];);
@@ -94,9 +96,41 @@ fn main() {
         "zane",
     ];);
 
+    /*
+    sig.func Ident { ident: "double", span: #0 bytes(1602..1608) }
+    sig.args [Path(TypePath { qself: None, path: Path { leading_colon: None, segments: [PathSegment { ident: Ident { ident: "usize", span: #0 bytes(1609..1614) }, arguments: None }] } })]
+    sig.ret Path(TypePath { qself: None, path: Path { leading_colon: None, segments: [PathSegment { ident: Ident { ident: "usize", span: #0 bytes(1619..1624) }, arguments: None }] } })
+    */
     make_function!(fn double(usize) -> usize);
 
     println!("double(77) is {}", double(77));
+
+    //show_token_stream!(["bruce", "zane"]);
+    // TokenStream [Group { delimiter: Bracket, stream: TokenStream [Literal { kind: Str, symbol: "bruce", suffix: None, span: #0 bytes(2159..2166) }, Punct { ch: ',', spacing: Alone, span: #0 bytes(2166..2167) }, Literal { kind: Str, symbol: "zane", suffix: None, span: #0 bytes(2168..2174) }], span: #0 bytes(2158..2175) }]
+
+    //pub fn get_query_type(s: &str) -> Option<QueryType>
+    // TokenStream [Ident { sym: pub }, Ident { sym: fn }, Ident { sym: get_query_type }, Group { delimiter: Parenthesis, stream: TokenStream [Ident { sym: s }, Punct { char: ':', spacing: Alone }, Punct { char: '&', spacing: Alone }, Ident { sym: str }] }, Punct { char: '-', spacing: Joint }, Punct { char: '>', spacing: Alone }, Ident { sym: Option }, Punct { char: '<', spacing: Alone }, Ident { sym: QueryType }, Punct { char: '>', spacing: Alone }]
+
+    //words_list("bruce", "bruc", "bru",);
+    words_list!("bruce", "bruc", "bru",);
+
+    println!("TEST = {:?}", TEST);
+
+    // error:
+    // /println!("item_struct2 {:?}", item_struct2!( { bruce: u32 } ));
+
+    loop {
+        let mut line = String::new();
+        std::io::stdin().read_line(&mut line).unwrap();
+        let line = line.trim_end();
+        if line.len() == 0 {
+            break;
+        }
+        let stream: TokenStream = TokenStream::from_str(line).unwrap().into();
+
+        println!("{:?}\n", stream);
+        // /println!("{:?}", tuple_parse!("bruce", "wayne", "craig mac", ));
+    }
 }
 
 fn _main2() {

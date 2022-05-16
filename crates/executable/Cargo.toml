@@ -14,3 +14,5 @@ rustc-hash = "1.1.0"
 [dependencies.mac]
 path = "../mac"
 
+[features]
+parsing = []
