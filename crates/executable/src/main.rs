@@ -1,112 +1,78 @@
-use rustc_hash::FxHashMap;
-
 // necessary for the TokenStream::from_str() implementation
 use std::str::FromStr;
 
 extern crate proc_macro;
-use proc_macro2::TokenStream;
-use quote::{format_ident, quote};
-use syn::ItemStruct;
-
-const _VALID_METHODS: [&str; 31] = [
-    "ACL",
-    "BASELINE-CONTROL",
-    "CHECKIN",
-    "CHECKOUT",
-    "CONNECT",
-    "COPY",
-    "DELETE",
-    "GET",
-    "HEAD",
-    "LABEL",
-    "LOCK",
-    "MERGE",
-    "MKACTIVITY",
-    "MKCALENDAR",
-    "MKCOL",
-    "MKWORKSPACE",
-    "MOVE",
-    "OPTIONS",
-    "ORDERPATCH",
-    "PATCH",
-    "POST",
-    "PROPFIND",
-    "PROPPATCH",
-    "PUT",
-    "REPORT",
-    "SEARCH",
-    "TRACE",
-    "UNCHECKOUT",
-    "UNLOCK",
-    "UPDATE",
-    "VERSION-CONTROL",
-];
-
-const _VMETHODS: &str = r#"
-const VALID_METHODS: [&str; 31] = [
-    "ACL",
-    "BASELINE-CONTROL",
-    "CHECKIN",
-    "CHECKOUT",
-    "CONNECT",
-    "COPY",
-    "DELETE",
-    "GET",
-    "HEAD",
-    "LABEL",
-    "LOCK",
-    "MERGE",
-    "MKACTIVITY",
-    "MKCALENDAR",
-    "MKCOL",
-    "MKWORKSPACE",
-    "MOVE",
-    "OPTIONS",
-    "ORDERPATCH",
-    "PATCH",
-    "POST",
-    "PROPFIND",
-    "PROPPATCH",
-    "PUT",
-    "REPORT",
-    "SEARCH",
-    "TRACE",
-    "UNCHECKOUT",
-    "UNLOCK",
-    "UPDATE",
-    "VERSION-CONTROL",
-];
-"#;
-
-const WORDS: [&str; 3] = [
-    "bruce",
-    "heihei",
-    "zane",
-];
+use proc_macro2:: {TokenStream, TokenTree};
 
 use mac::{
-    show_token_stream, build_thing,
+    build_thing
 };
 
 #[derive(Debug, Copy, Clone)]
 enum QueryType {
-    Ne = 1,
+    /// Mongo Object Expansion Only
+    Gte = 1,
     Gt,
-    Gte,
+    Lt,
+    Lte,
+    Eq,
+    Ne,
+    In,
+    Nin,
+    Mod,
+    All,
+    Size,
+    Exists,
+    Type,
+    Slice,
+    Or,
+
+    /// Mongo String Injection and Object Expansion
+    Where,
+
+    /// Mongo String Injection Only
+    MapReduce,
+    Reduce,
+    Finalize,
+    KeyF,
+    Body,
+    Accumulator,
+    Init,
+    Merge,
+    Accumulate,
 }
 
-fn main() {
-    show_token_stream!(func_name, (&'static str, QueryType), [
-        ("$ne", QueryType::Ne),
-        ("$gt", QueryType::Gt),
-        ("$gte", QueryType::Gte),
-    ]);
-    build_thing!(my_func, (&'static str, QueryType), [
-        ("$ne", QueryType::Ne),
-        ("$gt", QueryType::Gt),
-        ("$gte", QueryType::Gte),
-    ]);
+build_thing!(get_query_type, (&'static str, QueryType), [
+    ("$gte", QueryType::Gte),
+    ("$gt", QueryType::Gt),
+    ("$lt", QueryType::Lt),
+    ("$lte", QueryType::Lte),
+    ("$eq", QueryType::Eq),
+    ("$ne", QueryType::Ne),
+    ("$in", QueryType::In),
+    ("$nin", QueryType::Nin),
+    ("$mod", QueryType::Mod),
+    ("$all", QueryType::All),
+    ("$size", QueryType::Size),
+    ("$exists", QueryType::Exists),
+    ("$type", QueryType::Type),
+    ("$slice", QueryType::Slice),
+    ("$or", QueryType::Or),
 
+    ("$where", QueryType::Where),
+
+    ("mapReduce", QueryType::MapReduce),
+    ("$reduce", QueryType::Reduce),
+    ("$finalize", QueryType::Finalize),
+    ("$keyf", QueryType::KeyF),
+    ("body", QueryType::Body),
+    ("accumulator", QueryType::Accumulator),
+    ("init", QueryType::Init),
+    ("merge", QueryType::Merge),
+    ("accumulate", QueryType::Accumulate),
+]);
+
+fn main() {
     loop {
         let mut line = String::new();
         std::io::stdin().read_line(&mut line).unwrap();
@@ -114,10 +80,33 @@ fn main() {
         if line.len() == 0 {
             break;
         }
-        println!("executing my_func(\"{}\") {}", line, my_func(line));
-        //let stream: TokenStream = TokenStream::from_str(line).unwrap().into();
-
-        //println!("{:?}\n", stream);
-        // /println!("{:?}", tuple_parse!("bruce", "wayne", "craig mac", ));
+        if line.len() > 5 && &line[0..5] == "/show" {
+            let stream: TokenStream = TokenStream::from_str(&line[5..]).unwrap().into();
+            show_token_stream(stream);
+            //show_token_stream!(stream);
+            //println!("{:?}\n", stream);
+            continue;
+        }
+        println!("executing get_query_type(\"{}\") -> {}", line, get_query_type(line));
     }
+}
+
+pub fn show_token_stream(input: TokenStream) {
+    display_token_stream(input.into(), 0);
+}
+
+fn display_token_stream(input: TokenStream, indent: usize) -> () {
+    let inputs = input.clone().into_iter().collect::<Vec<_>>();
+    for input in inputs {
+        match &input {
+            TokenTree::Group(g) => {
+                println!("{}group", " ".repeat(indent));
+                display_token_stream(g.stream(), indent + 4);
+            },
+            _ => {
+                println!("{}{:?}", " ".repeat(indent), input);
+            }
+        }
+    }
+    ()
 }

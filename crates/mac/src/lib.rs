@@ -5,11 +5,7 @@ extern crate proc_macro2;
 use proc_macro2::{
     TokenStream,
     TokenTree,
-    //Ident,
 };
-//use proc_macro2:: {
-//    Span,
-//};
 use quote::{quote};
 
 #[proc_macro]
@@ -23,9 +19,6 @@ pub fn show_token_stream(input: proc_macro::TokenStream) -> proc_macro::TokenStr
 
 fn display_token_stream(input: TokenStream, indent: usize) -> () {
     let inputs = input.clone().into_iter().collect::<Vec<_>>();
-    //for input in inputs {
-    //    println!("{}{:?}", " ".repeat(indent), input);
-    //}
     for input in inputs {
         match &input {
             TokenTree::Group(g) => {
@@ -90,14 +83,6 @@ pub fn build_thing(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             group_items(&mut buckets, items.clone());
             lengths = buckets.keys().collect();
             lengths.sort_unstable();
-            //for length in lengths {
-            //    let item_vec = buckets.get(length).unwrap();
-            //    println!("{} {:?}", length, item_vec);
-            //}
-            // note: iterating on a hashmap returns (key, entry)
-            //for (key, entry) in buckets {
-            //    println!("bucket key {} bucket {:?}", key, entry);
-            //}
         },
         _ => panic!("items expected")
     }

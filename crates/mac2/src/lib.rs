@@ -177,15 +177,12 @@ pub fn show_token_stream(input: proc_macro::TokenStream) -> proc_macro::TokenStr
     display_token_stream(input, 0);
 
     let output: proc_macro::TokenStream = quote! { () }.into();
-    //proc_macro::TokenStream::from(input)
+
     output
 }
 
 fn display_token_stream(input: proc_macro::TokenStream, indent: usize) -> () {
     let inputs = input.clone().into_iter().collect::<Vec<_>>();
-    //for input in inputs {
-    //    println!("{}{:?}", " ".repeat(indent), input);
-    //}
     for input in inputs {
         match &input {
             TokenTree::Group(g) => {
