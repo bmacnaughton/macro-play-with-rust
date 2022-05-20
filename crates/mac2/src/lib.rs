@@ -403,8 +403,8 @@ pub fn words_list(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             T2.len()
         }
     );
-    let stream: [TokenStream; 3] = [q.into(), q2.into(), q3.into()];
-    stream.into_iter().collect()
+    let streams: [TokenStream; 3] = [q.into(), q2.into(), q3.into()];
+    streams.into_iter().collect()
 }
 
 /**
