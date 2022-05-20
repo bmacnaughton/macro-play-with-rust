@@ -85,36 +85,46 @@ const WORDS: [&str; 3] = [
 ];
 
 use mac::{
-    show_token_stream, sorted_strings, make_function, words_list, item_struct2
+    show_token_stream, build_thing,
 };
 
 fn main() {
     //show_tokens!(const x: [&str; 3] = ["bruce", "says", "hi"];);
-    let func = sorted_strings!(const WORDS: [&str; 3] = [
-        "bruce",
-        "heihei",
-        "zane",
-    ];);
+    //let func = sorted_strings!(const WORDS: [&str; 3] = [
+    //    "bruce",
+    //    "heihei",
+    //    "zane",
+    //];);
 
     /*
     sig.func Ident { ident: "double", span: #0 bytes(1602..1608) }
     sig.args [Path(TypePath { qself: None, path: Path { leading_colon: None, segments: [PathSegment { ident: Ident { ident: "usize", span: #0 bytes(1609..1614) }, arguments: None }] } })]
     sig.ret Path(TypePath { qself: None, path: Path { leading_colon: None, segments: [PathSegment { ident: Ident { ident: "usize", span: #0 bytes(1619..1624) }, arguments: None }] } })
     */
-    make_function!(fn double(usize) -> usize);
+    //make_function!(fn double(usize) -> usize);
 
-    println!("double(77) is {}", double(77));
+    //println!("double(77) is {}", double(77));
 
     //show_token_stream!(["bruce", "zane"]);
     // TokenStream [Group { delimiter: Bracket, stream: TokenStream [Literal { kind: Str, symbol: "bruce", suffix: None, span: #0 bytes(2159..2166) }, Punct { ch: ',', spacing: Alone, span: #0 bytes(2166..2167) }, Literal { kind: Str, symbol: "zane", suffix: None, span: #0 bytes(2168..2174) }], span: #0 bytes(2158..2175) }]
+    show_token_stream!(func_name, (&'static str, QueryType), [
+        ("$ne", QueryType::Ne),
+        ("$gt", QueryType::Gt),
+    ]);
+    build_thing!(my_func, (&'static str, QueryType), [
+        ("$ne", QueryType::Ne),
+        ("$gt", QueryType::Gt),
+    ]);
+
+    println!("executing my_func {}", my_func());
 
     //pub fn get_query_type(s: &str) -> Option<QueryType>
     // TokenStream [Ident { sym: pub }, Ident { sym: fn }, Ident { sym: get_query_type }, Group { delimiter: Parenthesis, stream: TokenStream [Ident { sym: s }, Punct { char: ':', spacing: Alone }, Punct { char: '&', spacing: Alone }, Ident { sym: str }] }, Punct { char: '-', spacing: Joint }, Punct { char: '>', spacing: Alone }, Ident { sym: Option }, Punct { char: '<', spacing: Alone }, Ident { sym: QueryType }, Punct { char: '>', spacing: Alone }]
 
     //words_list("bruce", "bruc", "bru",);
-    words_list!(get_t2, "bruce", "bruc", "bru",);
+    //words_list!(get_t2, "bruce", "bruc", "bru",);
+    //println!("TEST = {:?}, T2 = {:?}, T2.len() = {}", TEST, T2, get_t2());
 
-    println!("TEST = {:?}, T2 = {:?}, T2.len() = {}", TEST, T2, get_t2());
 
     // error:
     // /println!("item_struct2 {:?}", item_struct2!( { bruce: u32 } ));

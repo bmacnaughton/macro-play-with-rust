@@ -13,6 +13,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "mac2"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "rustc-hash",
+ "syn",
+]
+
+[[package]]
 name = "macro_play"
 version = "0.1.0"
 dependencies = [

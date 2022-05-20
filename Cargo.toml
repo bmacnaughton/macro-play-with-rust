@@ -2,6 +2,7 @@
 members = [
   "./crates/executable",
   "./crates/mac",
+  "./crates/mac2",
 ]
 
 [profile.release]
