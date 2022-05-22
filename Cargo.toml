@@ -1,8 +1,13 @@
 [workspace]
 members = [
   "./crates/executable",
+  "./crates/executable2",
+  "./crates/executable3",
+  "./crates/executable4",
   "./crates/mac",
   "./crates/mac2",
+  "./crates/mac3",
+  "./crates/mac4",
 ]
 
 [profile.release]

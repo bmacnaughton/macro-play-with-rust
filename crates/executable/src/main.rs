@@ -1,7 +1,14 @@
 // necessary for the TokenStream::from_str() implementation
 use std::str::FromStr;
 
-extern crate proc_macro;
+// for not-newline terminated output
+use std::io;
+// flush needs the Write trait...
+use std::io::Write;
+
+// display macro expansion:
+// $ rustup run nightly cargo rustc -- -Zunpretty=expanded
+// https://stackoverflow.com/questions/28580386/how-do-i-see-the-expanded-macro-code-thats-causing-my-compile-error
 use proc_macro2:: {TokenStream, TokenTree};
 
 use mac::{
@@ -74,6 +81,8 @@ build_thing!(get_query_type, (&'static str, QueryType), [
 
 fn main() {
     loop {
+        print!("> ");
+        io::stdout().flush().unwrap();
         let mut line = String::new();
         std::io::stdin().read_line(&mut line).unwrap();
         let line = line.trim_end();
@@ -83,8 +92,6 @@ fn main() {
         if line.len() > 5 && &line[0..5] == "/show" {
             let stream: TokenStream = TokenStream::from_str(&line[5..]).unwrap().into();
             show_token_stream(stream);
-            //show_token_stream!(stream);
-            //println!("{:?}\n", stream);
             continue;
         }
         println!("executing get_query_type(\"{}\") -> {}", line, get_query_type(line));

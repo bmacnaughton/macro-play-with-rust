@@ -1,12 +1,4 @@
-use rustc_hash::FxHashMap;
-
-// necessary for the TokenStream::from_str() implementation
-use std::str::FromStr;
-
-extern crate proc_macro;
-use proc_macro2::TokenStream;
-use quote::{format_ident, quote};
-use syn::ItemStruct;
+#![deny(clippy::all)]
 
 const _VALID_METHODS: [&str; 31] = [
     "ACL",
@@ -77,12 +69,6 @@ const VALID_METHODS: [&str; 31] = [
     "VERSION-CONTROL",
 ];
 "#;
-
-const WORDS: [&str; 3] = [
-    "bruce",
-    "heihei",
-    "zane",
-];
 
 use mac::{
     show_token_stream, build_thing,

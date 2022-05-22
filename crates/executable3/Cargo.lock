@@ -3,71 +3,9 @@
 version = 3
 
 [[package]]
-name = "executable2"
-version = "0.1.0"
-dependencies = [
- "mac",
- "proc-macro2",
- "quote",
- "rustc-hash",
- "syn",
-]
-
-[[package]]
-name = "executable3"
-version = "0.1.0"
-dependencies = [
- "mac3",
-]
-
-[[package]]
-name = "executable4"
-version = "0.1.0"
-dependencies = [
- "mac4",
-]
-
-[[package]]
-name = "mac"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "rustc-hash",
- "syn",
-]
-
-[[package]]
-name = "mac2"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "rustc-hash",
- "syn",
-]
-
-[[package]]
-name = "mac3"
-version = "0.1.0"
-dependencies = [
- "quote",
- "syn",
-]
-
-[[package]]
-name = "mac4"
-version = "0.1.0"
-dependencies = [
- "quote",
- "syn",
-]
-
-[[package]]
 name = "macro_play"
 version = "0.1.0"
 dependencies = [
- "mac",
  "proc-macro2",
  "quote",
  "rustc-hash",

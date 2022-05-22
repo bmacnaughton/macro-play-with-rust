@@ -1,7 +1,7 @@
 use rustc_hash::FxHashMap;
 
+// https://stackoverflow.com/questions/61423236/converting-type-inside-quote-gives-trait-errors
 extern crate proc_macro2;
-
 use proc_macro2::{
     TokenStream,
     TokenTree,
@@ -35,6 +35,22 @@ fn display_token_stream(input: TokenStream, indent: usize) -> () {
 
 ///
 /// build const arrays of same-length string slices
+///
+/// build_thing(function_name, tuple_type, [tuple_item, ...]);
+///
+/// function_name - create a function named function_name and use this as a prefix
+/// for the array names.
+///
+/// tuple_type - defines the pair, e.g., (&'static str, QueryType), for the next argument
+///
+/// tuple_item - items of tuple_type.
+///
+/// it creates one constant array of tuple_type for every length of the &'static str slices
+/// and creates a function name function_name that takes a &str argument and returns the
+/// tuple_item.1 value as a u32. if nothing was matched it returns a 0.
+///
+/// making the return value an Option comes next but that requires capturing the type of
+/// tuple_type.1
 ///
 #[proc_macro]
 pub fn build_thing(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
