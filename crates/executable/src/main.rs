@@ -48,7 +48,7 @@ enum QueryType {
     Merge,
     Accumulate,
 }
-
+//
 build_thing!(get_query_type, (&'static str, QueryType), [
     ("$gte", QueryType::Gte),
     ("$gt", QueryType::Gt),

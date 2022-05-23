@@ -60,6 +60,7 @@ name = "mac4"
 version = "0.1.0"
 dependencies = [
  "quote",
+ "rustc-hash",
  "syn",
 ]
 

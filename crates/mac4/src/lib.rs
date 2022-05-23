@@ -5,9 +5,10 @@ use quote::{quote, quote_spanned};
 use syn::parse::{Parse, ParseStream, Result};
 use syn::spanned::Spanned;
 use syn::{
+    Expr,
     parse_macro_input,
     Token,
-    Visibility, Ident, ExprArray, TypeTuple,
+    Visibility, Ident, ExprArray, TypeTuple, ExprTuple, ExprLit,
 };
 
 /// Parses the following syntax, which is based on dtolnay's work mimicking
@@ -78,10 +79,48 @@ pub fn make_lookup_by_str_funct(input: TokenStream) -> TokenStream {
         init,
     } = parse_macro_input!(input as LookupThingByStr);
 
+    if type_tuple.elems.len() != 2 {
+        panic!("the tuple must have exactly 2 elements");
+    }
+
     //println!("vis: {:?}", visibility);
     //println!("name: {:?}, to_string(): {}", name, name.to_string());
-    //println!("type_tuple (n = {}): {:?}", type_tuple.elems.len(), type_tuple);
+    //println!("type_tuple (n = {}): tuple: {:?}", type_tuple.elems.len(), type_tuple);
+    //println!("type_tuple (n = {}): elems: {:?}", type_tuple.elems.len(), type_tuple.elems);
     //println!("type_tuple.elems[0]: {:?}", type_tuple.elems[0]);
+
+    println!("init elems.len(): {:?}\n", init.elems.len());
+    println!("init.elems {:?}\n", init.elems);
+
+    let items_len = init.elems.len();
+    for expr in &init.elems {
+        if let Expr::Tuple(et) = expr {
+            let ExprTuple{elems, ..} = et;
+            for e in elems.first() {
+                if let syn::Expr::Lit(elit) = e {
+                    let ExprLit{lit, ..} = elit;
+                    if let syn::Lit::Str(lit_str) = lit {
+                        let string = lit_str.token().to_string();
+                        let s = &string[1..string.len() - 1];
+                        println!("    {:?} ({})", s, s.len());
+                        println!("    {:?}", lit_str.token());
+                    }
+                }
+            }
+        }
+    }
+    //let mut tuples: Vec<Expr> = init.clone().elems.into_iter().collect();
+    //for elem in &init.elems {
+    //    println!("  {:?}", elem);
+    //}
+    //for expr in tuples {
+    //    if let ExprTuple {
+    //        attrs,
+    //        paren_token,
+    //        elems,
+    //    } = expr;
+    //}
+
     //if let Type::Reference(tr) = &type_tuple.elems[0] {
     //    //println!("type_ref: {:?}", tr.elem);
     //}
@@ -117,7 +156,9 @@ pub fn make_lookup_by_str_funct(input: TokenStream) -> TokenStream {
     let items_type = &type_tuple;
     let lookup_type = &type_tuple.elems[0];
     let return_type = &type_tuple.elems[1];
-    let items_len = init.elems.len();
+    //let items_len = init.elems.len();
+
+    //let buckets = group_items(type_tuple);
 
     let expanded = quote! {
 
@@ -136,3 +177,30 @@ pub fn make_lookup_by_str_funct(input: TokenStream) -> TokenStream {
 
     TokenStream::from(expanded)
 }
+
+//*
+use rustc_hash::FxHashMap;
+fn group_items(items: &[TypeTuple]) -> FxHashMap<usize, Vec<TypeTuple>> {
+    let mut buckets: FxHashMap<usize, Vec<TypeTuple>> = FxHashMap::default();
+
+    for item in items {
+        println!("type tuple: {:?}", item);
+        //let tokens = item.stream().into_iter().collect::<Vec<_>>();
+        //match &tokens[0] {
+        //    TokenTree::Literal(str_value) => {
+        //        let str = str_value.to_string();
+        //        // get rid of the quotes
+        //        let str = &str[1..str.len() - 1];
+        //        let len = str.len();
+        //        let vec = buckets.entry(len).or_insert(Vec::<proc_macro2::Group>::new());
+        //        vec.push(item);
+//
+        //    },
+        //    _ => panic!("first item must be string literal")
+        //}
+    }
+
+    buckets
+}
+
+// */
