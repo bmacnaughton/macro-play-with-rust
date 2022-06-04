@@ -1,4 +1,7 @@
+#![deny(clippy::all)]
 
+// execute this to see macro expansion
+// cargo +nightly rustc --profile=check -- -Zunpretty=expanded
 
 extern crate mac4;
 
@@ -42,7 +45,7 @@ fn main() {
     }
 
     make_lookup_by_str_funct!(
-        const exper: (&str, usize) = [
+        const exper: (&str, u32) = [
             "zero",
             "one",
             "two"
