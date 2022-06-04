@@ -73,7 +73,7 @@ impl Parse for LookupThingByStr {
 }
 
 #[proc_macro]
-pub fn make_lookup_by_str_funct(input: TokenStream) -> TokenStream {
+pub fn make_lookup_by_str_func(input: TokenStream) -> TokenStream {
     let LookupThingByStr {
         visibility,
         name,
