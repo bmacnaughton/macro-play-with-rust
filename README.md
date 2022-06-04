@@ -102,8 +102,8 @@ where:
 - `value-type` must be an integer type (usize, u16, i32, etc.)
 - `str-list` is just a list `str`, e.g., `["bruce", "one", "soma", "hendrix"]`
 
-in which case it will create tuples of `value-type` using the index of each str
-in `str-list`.
+in which case it will create tuples with `value-type` equal to the index of
+the str in `str-list`.
 
 # try it yourself
 
