@@ -132,15 +132,15 @@ and it creates:
 
 as a convenience, it also accepts:
 
-`const <function-name>: <type-tuple> = [<str-list>, ...]`
+`const <function-name>: <type-tuple> = [<str>, ...]`
 
 where:
 - `function-name`, `type-tuple` are the same as above
 - `value-type` must be an integer type (usize, u16, i32, etc.)
-- `str-list` is just a list `str`, e.g., `["bruce", "one", "soma", "hendrix"]`
+- `str` is just a `str`, e.g., `["bruce", "one", "soma", "hendrix"]`
 
 in which case it will create tuples with `value-type` equal to the index of
-the str in `str-list`.
+the `str` in the array.
 
 # try it yourself
 
