@@ -1,10 +1,10 @@
 # experimental work with rust procedural macros
 
 i wanted to learn how to use procedural macros. i had previously worked with macros
-in common bliss and loved their power. then i worked with c, and while it's possible
-to do fairly sophisticated things with c macros, i always felt hamstrung.
+in common bliss and loved their power. then i worked with c/c++, and while it's possible
+to do fairly sophisticated things with c/c++ macros, i always felt hamstrung.
 
-well, when i first saw rust macros, i felt like i'd met a long-lost friend.
+when i first saw rust macros, i felt like i'd met a long-lost friend.
 
 # what to do?
 
@@ -18,7 +18,7 @@ term - trying to stay ahead of rust's optimizer is an endless task.
 
 the second was to group the strings by length and only search the subset that matches
 the length of the input string. this turned out to be faster when the list to be
-searched is not very short and not all elements are the same length.
+searched is longer than 2-4 items, and not all elements are the same length.
 
 but while doing this out of curiousity was worthwhile, it's not the kind of thing that
 most programmers (or I, anyway) want to do - manually sorting strings by length and
@@ -55,7 +55,8 @@ but good-syntax-in => good-syntax-out.
 
 the macro `make_lookup_by_str_func` creates a function that looks up a string slice in a list
 of `str` and returns an `Option` to a value associated with each `str` in the list, or `None`
-if the needle was not found.
+if the needle was not found. the list of tuples, e.g., `(str, value)` is split into multiple
+lists, one for each length of `str` in the tuples.
 
 example:
 
@@ -68,16 +69,52 @@ example:
         ];
     );
 
+    //
+    // is transformed into this code:
+    //
+    #[allow(non_upper_case_globals)]
+    const another_phrase_ITEMS_4: [(&str, &str); 2usize] =
+        [("once", "one time"), ("evil", "wicked")];
+    #[allow(non_upper_case_globals)]
+    const another_phrase_ITEMS_6: [(&str, &str); 1usize] =
+        [("elated", "ecstatic")];
+    fn another_phrase(s: &str) -> Option<&str> {
+        match s.len() {
+            4usize => {
+                for i in 0..another_phrase_ITEMS_4.len() {
+                    if s == another_phrase_ITEMS_4[i].0 {
+                        return Some(another_phrase_ITEMS_4[i].1);
+                    }
+                }
+                return None;
+            }
+            6usize => {
+                for i in 0..another_phrase_ITEMS_6.len() {
+                    if s == another_phrase_ITEMS_6[i].0 {
+                        return Some(another_phrase_ITEMS_6[i].1);
+                    }
+                }
+                return None;
+            }
+            _ => None,
+        }
+    }
+
+    //
+    // which can be used:
+    //
     for s in ["once", "elated", "evil", "i don't know"] {
         println!("another way to say \"{}\" is {:?}", s, another_phrase(s));
     }
 
-    // outputs:
+    // which outputs:
     // another way to say "once" is Option("one time")
     // another way to say "elated" is Option("ecstatic")
     // another way to say "evil" is Option("wicked")
     // another way to say "i don't know" is None
 ```
+
+
 
 the syntax that `make_lookup_by_str_func` accepts is:
 
