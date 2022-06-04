@@ -83,10 +83,11 @@ pub fn make_lookup_by_str_funct(input: TokenStream) -> TokenStream {
 
     // todo - allow it to be only one element but return the index? or
     // is that a bridge too far?
-    if type_tuple.elems.len() != 2 {
-        panic!("the tuple must have exactly 2 elements");
+    if type_tuple.elems.len() != 1 && type_tuple.elems.len() != 2 {
+        panic!("the tuple must have either 1 or 2 elements");
     }
 
+    let span = proc_macro2::Span::call_site();
     let mut buckets: FxHashMap<usize, Vec<ExprTuple>> = FxHashMap::default();
 
     // this is the ugliest part of the macro - it might just be because i don't
@@ -99,7 +100,8 @@ pub fn make_lookup_by_str_funct(input: TokenStream) -> TokenStream {
     //
     // there might be a better way by creating a parser, but i haven't gotten
     // there yet.
-    for expr in &init.elems {
+    for (ix, expr) in init.elems.iter().enumerate() {
+        // most common is a tuple, e.g., ("bruce", EnumThing::Bruce)
         if let Expr::Tuple(et) = expr {
             let ExprTuple{elems, ..} = et;
 
@@ -117,17 +119,47 @@ pub fn make_lookup_by_str_funct(input: TokenStream) -> TokenStream {
                         let tv = buckets.get_mut(&s.len()).unwrap();
                         tv.push(et.clone());
 
-                    }
-                }
+                    } // else error?
+                } // else error?
             }
-        }
+        // but allow simple lookup of a string, e.g., "bruce"
+        } else if let Expr::Lit(elit) = expr {
+            let ExprLit{lit, ..} = elit;
+            if let syn::Lit::Str(lit_str) = lit {
+                let string = lit_str.token().to_string();
+                let s = &string[1..string.len() - 1];
+                let mut elems = syn::punctuated::Punctuated::<syn::Expr, syn::token::Comma>::new();
+                let attrs = Vec::<syn::Attribute>::new();
+
+                elems.push(Expr::Lit(syn::ExprLit{attrs, lit: syn::Lit::Str(lit_str.clone())}));
+
+                let attrs = Vec::<syn::Attribute>::new();
+                let index = format!("{}", ix);
+                let index = syn::Lit::Int(syn::LitInt::new(&index, span));
+                elems.push(Expr::Lit(syn::ExprLit{attrs, lit: index}));
+                // need to create ExprTuple for this to flow nicely
+                let index_tup = ExprTuple{
+                    attrs: Vec::<syn::Attribute>::new(),
+                    paren_token: type_tuple.paren_token.clone(),
+                    elems
+                };
+
+                if !buckets.contains_key(&s.len()) {
+                    buckets.insert(s.len(), Vec::<ExprTuple>::new());
+                }
+                let tv = buckets.get_mut(&s.len()).unwrap();
+                tv.push(index_tup);
+
+                //println!("index {} tup: {:?}", ix, index_tup);
+            }
+        } // else error?
     }
 
     let mut lengths: Vec<&usize> = buckets.keys().collect();
     lengths.sort();
 
     use quote::ToTokens;
-    let span = proc_macro2::Span::call_site();
+
 
     // why is declarations a Vec<proc_macro::TokenStream> while match_arms is
     // a Vec::<proc_macro2::TokenStream>, you might ask?

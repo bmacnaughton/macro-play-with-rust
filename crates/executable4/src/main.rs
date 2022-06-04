@@ -37,11 +37,22 @@ fn main() {
     );
 
 
-
     for s in ["once", "elated", "stupid", "i don't know"] {
-        if let Some(a) = another_phrase(s) {
-        }
         println!("another phrase for {} is {:?}", s, another_phrase(s));
     }
+
+    make_lookup_by_str_funct!(
+        const exper: (&str, usize) = [
+            "zero",
+            "one",
+            "two"
+        ];
+    );
+
+    for s in ["zero", "one", "two", "three"] {
+        println!("{}'s index is {:?}", s, exper(s));
+    }
+
+
 }
 
