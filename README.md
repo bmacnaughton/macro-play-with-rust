@@ -160,3 +160,29 @@ $ cargo +nightly rustc -- -Zunpretty=expanded
 as the word list gets longer, at some point `FxHashMap` will win - it is near
 constant cost. but for lists of "reasonable" length, where not all words are
 the same length, this macro results in optimal performance.
+
+# next steps
+
+improve error handling and reporting. work with spans more.
+
+try to handle more of the parsing with a more sophisticated version of
+```rust
+impl Parse for LookupThingByStr {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let visibility: Visibility = input.parse()?;
+        input.parse::<Token![const]>()?;
+        let name: Ident = input.parse()?;
+        input.parse::<Token![:]>()?;
+        let type_tuple: TypeTuple = input.parse()?;
+        input.parse::<Token![=]>()?;
+        let init: ExprArray = input.parse()?;
+        input.parse::<Token![;]>()?;
+        Ok(LookupThingByStr {
+            visibility,
+            name,
+            type_tuple,
+            init,
+        })
+    }
+}
+```
