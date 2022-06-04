@@ -20,12 +20,28 @@ fn main() {
         const xyzzy: (&str, Index) = [
             ("bruce", Index::Bruce),
             ("zane", Index::Zane),
-            ("klo", Index::Klo)
+            ("chloe", Index::Klo)
         ];
     );
 
-    for s in ["bruce", "klo", "zane", "other"] {
+    for s in ["bruce", "chloe", "zane", "other"] {
         println!("lookup {}: {:?}", s, xyzzy(s));
+    }
+
+    make_lookup_by_str_funct!(
+        const another_phrase: (&str, &str) = [
+            ("once", "one time"),
+            ("elated", "ecstatic"),
+            ("stupid", "dumb"),
+        ];
+    );
+
+
+
+    for s in ["once", "elated", "stupid", "i don't know"] {
+        if let Some(a) = another_phrase(s) {
+        }
+        println!("another phrase for {} is {:?}", s, another_phrase(s));
     }
 }
 

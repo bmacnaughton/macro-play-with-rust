@@ -11,6 +11,8 @@ use syn::{
     Visibility, Ident, ExprArray, TypeTuple, ExprTuple, ExprLit,
 };
 
+use rustc_hash::FxHashMap;
+
 /// Parses the following syntax, which is based on dtolnay's work mimicking
 /// the `lazy_static` crate:
 ///
@@ -79,51 +81,122 @@ pub fn make_lookup_by_str_funct(input: TokenStream) -> TokenStream {
         init,
     } = parse_macro_input!(input as LookupThingByStr);
 
+    // todo - allow it to be only one element but return the index? or
+    // is that a bridge too far?
     if type_tuple.elems.len() != 2 {
         panic!("the tuple must have exactly 2 elements");
     }
 
-    //println!("vis: {:?}", visibility);
-    //println!("name: {:?}, to_string(): {}", name, name.to_string());
-    //println!("type_tuple (n = {}): tuple: {:?}", type_tuple.elems.len(), type_tuple);
-    //println!("type_tuple (n = {}): elems: {:?}", type_tuple.elems.len(), type_tuple.elems);
-    //println!("type_tuple.elems[0]: {:?}", type_tuple.elems[0]);
+    let mut buckets: FxHashMap<usize, Vec<ExprTuple>> = FxHashMap::default();
 
-    println!("init elems.len(): {:?}\n", init.elems.len());
-    println!("init.elems {:?}\n", init.elems);
-
-    let items_len = init.elems.len();
+    // this is the ugliest part of the macro - it might just be because i don't
+    // really understand them well enough yet. but the only way that i've found
+    // to get the `str` is to walk through the tuples and do the nested `if let`
+    // sequences until it gets to the string. (well, a state-driven match loop
+    // would do it too.) but one way or the other, it must descend to the literal
+    // str slices to capture each length to put each `ExprTuple` in the right
+    // length bucket.
+    //
+    // there might be a better way by creating a parser, but i haven't gotten
+    // there yet.
     for expr in &init.elems {
         if let Expr::Tuple(et) = expr {
             let ExprTuple{elems, ..} = et;
+
             for e in elems.first() {
                 if let syn::Expr::Lit(elit) = e {
                     let ExprLit{lit, ..} = elit;
                     if let syn::Lit::Str(lit_str) = lit {
                         let string = lit_str.token().to_string();
+                        // get rid of double quote at start and end
                         let s = &string[1..string.len() - 1];
-                        println!("    {:?} ({})", s, s.len());
-                        println!("    {:?}", lit_str.token());
+
+                        if !buckets.contains_key(&s.len()) {
+                            buckets.insert(s.len(), Vec::<ExprTuple>::new());
+                        }
+                        let tv = buckets.get_mut(&s.len()).unwrap();
+                        tv.push(et.clone());
+
                     }
                 }
             }
         }
     }
-    //let mut tuples: Vec<Expr> = init.clone().elems.into_iter().collect();
-    //for elem in &init.elems {
-    //    println!("  {:?}", elem);
-    //}
-    //for expr in tuples {
-    //    if let ExprTuple {
-    //        attrs,
-    //        paren_token,
-    //        elems,
-    //    } = expr;
-    //}
 
-    //if let Type::Reference(tr) = &type_tuple.elems[0] {
-    //    //println!("type_ref: {:?}", tr.elem);
-    //}
+    let mut lengths: Vec<&usize> = buckets.keys().collect();
+    lengths.sort();
+
+    use quote::ToTokens;
+    let span = proc_macro2::Span::call_site();
+
+    // why is declarations a Vec<proc_macro::TokenStream> while match_arms is
+    // a Vec::<proc_macro2::TokenStream>, you might ask?
+    //
+    // well, `declarations` are returned as is from this macro. and macros return
+    // proc_macro::TokenStreams. but `match_arms` is used in a `quote!` context and
+    // `quote!` both operates on and returns proc_macro2::TokenStreams. specifically,
+    // `match_arms` is needed for interpolation via `#(#match_arms),*` and that
+    // cannot use proc_macro::TokenStream as input. to sum up my current understanding,
+    // `quote!` requires proc_macro2::TokenStreams in order to do iterative
+    // interpolation.
+    //
+    // https://docs.rs/quote/latest/quote/macro.quote.html
+    let mut declarations = Vec::<TokenStream>::new();
+    let mut match_arms = Vec::<proc_macro2::TokenStream>::new();
+    // for each length of the str slices in the user's list build a separate
+    // const array of `ExprTuple`s
+    let type_tup_stream = type_tuple.to_token_stream();
+
+    for len in lengths {
+        let item_vec = buckets.get(len).unwrap();
+        let item_count = item_vec.len();
+
+        // make a unique name for the items, using the function name as a prefix and
+        // the length as a suffix. because the function name will very unlikely meet
+        // the uppercase standard for constants, the `#[alloc(non_upper_case_globals)]`
+        // is added.
+        let items_name_base = format!("{}_ITEMS_{}", name, len);
+        let items_name = syn::Ident::new(&items_name_base, span);
+        let itok = items_name.to_token_stream();
+
+        let length_decl = quote!(
+            #[allow(non_upper_case_globals)]
+            const #itok: [(#type_tup_stream); #item_count] = [#(#item_vec),*];
+        );
+
+        declarations.push(length_decl.into());
+
+        // also build a match arm
+        let arm = quote!(
+            #len => {
+                for i in 0..#itok.len() {
+                    if s == #itok[i].0 {
+                        // function must return Option<type_tuple.1>
+                        return Some(#itok[i].1);
+                    }
+                }
+                return None;
+            }
+        );
+        match_arms.push(arm);
+
+    }
+
+    // now build the function using the declarations.
+    let lookup_type = &type_tuple.elems[0];
+    let return_type = &type_tuple.elems[1];
+
+    let mut expanded = declarations;
+
+    expanded.push(quote! {
+
+        #visibility fn #name(s: #lookup_type) -> Option<#return_type> {
+            match s.len() {
+                #(#match_arms),*
+                _ => None
+            }
+        }
+    }.into());
 
     // Check for Sized. Not vital to check here, but the error message is less
     // confusing this way than if they get a Sized error in one of our
@@ -151,56 +224,9 @@ pub fn make_lookup_by_str_funct(input: TokenStream) -> TokenStream {
         struct _AssertParialEq where #type_tuple.elems[0]: std::cmd::PartialEq;
     };
 
-    let items_name = format!("{}_ITEMS", name);
-    let items_name = Ident::new(&items_name, name.span());
-    let items_type = &type_tuple;
-    let lookup_type = &type_tuple.elems[0];
-    let return_type = &type_tuple.elems[1];
-    //let items_len = init.elems.len();
-
-    //let buckets = group_items(type_tuple);
-
-    let expanded = quote! {
-
-        #[allow(non_upper_case_globals)]
-        const #items_name: [#items_type; #items_len] = #init;
-
-        #visibility fn #name(s: #lookup_type) -> Option<#return_type> {
-            for i in 0..#items_name.len() {
-                if s == #items_name[i].0 {
-                    return Some(#items_name[i].1);
-                }
-            }
-            None
-        }
-    };
-
-    TokenStream::from(expanded)
+    // convert the vector of tokenstreams into a single token stream
+    let mut single = TokenStream::new();
+    single.extend(expanded);
+    //println!("{}", single.to_string());
+    single
 }
-
-//*
-use rustc_hash::FxHashMap;
-fn group_items(items: &[TypeTuple]) -> FxHashMap<usize, Vec<TypeTuple>> {
-    let mut buckets: FxHashMap<usize, Vec<TypeTuple>> = FxHashMap::default();
-
-    for item in items {
-        println!("type tuple: {:?}", item);
-        //let tokens = item.stream().into_iter().collect::<Vec<_>>();
-        //match &tokens[0] {
-        //    TokenTree::Literal(str_value) => {
-        //        let str = str_value.to_string();
-        //        // get rid of the quotes
-        //        let str = &str[1..str.len() - 1];
-        //        let len = str.len();
-        //        let vec = buckets.entry(len).or_insert(Vec::<proc_macro2::Group>::new());
-        //        vec.push(item);
-//
-        //    },
-        //    _ => panic!("first item must be string literal")
-        //}
-    }
-
-    buckets
-}
-
-// */

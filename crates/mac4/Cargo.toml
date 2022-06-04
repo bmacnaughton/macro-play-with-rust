@@ -12,3 +12,4 @@ proc_macro = true
 syn = { version = "1.0.82", features = ["full", "extra-traits"]}
 quote = "1.0.10"
 rustc-hash = "1.1.0"
+proc-macro2 = "1.0.32"
