@@ -9,7 +9,8 @@ well, when i first saw rust macros, i felt like i'd met a long-lost friend.
 # what to do?
 
 i tinker with code, exploring what works well and what doesn't. and, on a lark, one
-day i decided to benchmark two different ways of matching strings.
+day i decided to benchmark two different ways of matching strings. (actually, i
+benchmarked four ways total, including using `FxHashMap` and `AhoCorasick`)
 
 the first was the default implementation - a sequence of match arms. rust's `match`
 is damn good but i wondered if it was possible to do better, at least in the short
@@ -116,3 +117,9 @@ $ cargo run
 # in main.rs before executing the following command).
 $ cargo +nightly rustc -- -Zunpretty=expanded
 ```
+
+# about the original exploration
+
+as the word list gets longer, at some point `FxHashMap` will win - it is near
+constant cost. but for lists of "reasonable" length, where not all words are
+the same length, this macro results in optimal performance.
