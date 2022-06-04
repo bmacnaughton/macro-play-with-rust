@@ -149,8 +149,6 @@ pub fn make_lookup_by_str_func(input: TokenStream) -> TokenStream {
                 }
                 let tv = buckets.get_mut(&s.len()).unwrap();
                 tv.push(index_tup);
-
-                //println!("index {} tup: {:?}", ix, index_tup);
             }
         } // else error?
     }
@@ -193,7 +191,7 @@ pub fn make_lookup_by_str_func(input: TokenStream) -> TokenStream {
 
         let length_decl = quote!(
             #[allow(non_upper_case_globals)]
-            const #itok: [(#type_tup_stream); #item_count] = [#(#item_vec),*];
+            const #itok: [#type_tup_stream; #item_count] = [#(#item_vec),*];
         );
 
         declarations.push(length_decl.into());
