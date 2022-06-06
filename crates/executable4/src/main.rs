@@ -20,7 +20,7 @@ enum Index {
 fn main() {
 
     make_lookup_by_str_func!(
-        const xyzzy: (&str, Index) = [
+        fn xyzzy -> (&str, Index) for [
             ("bruce", Index::Bruce),
             ("zane", Index::Zane),
             ("chloe", Index::Klo)
@@ -32,7 +32,7 @@ fn main() {
     }
 
     make_lookup_by_str_func!(
-        const another_phrase: (&str, &str) = [
+        fn another_phrase -> (&str, &str) for [
             ("once", "one time"),
             ("elated", "ecstatic"),
             ("evil", "wicked"),
@@ -45,7 +45,7 @@ fn main() {
     }
 
     make_lookup_by_str_func!(
-        const exper: (&str, i32) = [
+        fn exper -> (&str, i32) for [
             "zero",
             "one",
             "two"
@@ -57,7 +57,7 @@ fn main() {
     }
 
     make_lookup_by_str_func!(
-        const another_tuple: (&str, (u32, &str)) = [
+        pub fn another_tuple -> (&str, (u32, &str)) for [
             ("once", (42, "one time")),
             ("elated", (7, "ecstatic")),
             ("evil", (666, "wicked")),

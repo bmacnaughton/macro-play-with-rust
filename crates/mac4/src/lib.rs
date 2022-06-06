@@ -20,7 +20,7 @@ use rustc_hash::FxHashMap;
 ///
 ///
 ///     make_lookup_by_str_func! {
-///         $VISIBILITY const $NAME: $TYPE = $EXPR;
+///         $VISIBILITY fn $NAME -> $TYPE = $EXPR;
 ///     }
 ///
 /// For example:
@@ -56,11 +56,11 @@ struct LookupThingByStr {
 impl Parse for LookupThingByStr {
     fn parse(input: ParseStream) -> Result<Self> {
         let visibility: Visibility = input.parse()?;
-        input.parse::<Token![const]>()?;
+        input.parse::<Token![fn]>()?;
         let name: Ident = input.parse()?;
-        input.parse::<Token![:]>()?;
+        input.parse::<Token![->]>()?;
         let type_tuple: TypeTuple = input.parse()?;
-        input.parse::<Token![=]>()?;
+        input.parse::<Token![for]>()?;
         let init: ExprArray = input.parse()?;
         input.parse::<Token![;]>()?;
         Ok(LookupThingByStr {

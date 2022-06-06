@@ -62,7 +62,7 @@ example:
 
 ```rust
     make_lookup_by_str_func!(
-        const another_phrase: (&str, &str) = [
+        fn another_phrase -> (&str, &str) for [
             ("once", "one time"),
             ("elated", "ecstatic"),
             ("evil", "wicked"),
@@ -115,10 +115,9 @@ example:
 ```
 
 
-
 the syntax that `make_lookup_by_str_func` accepts is:
 
-`const <function-name>: <type-tuple> = [<list-def>, ...];`
+`fn <function-name> -> <type-tuple> for [<list-def>, ...];`
 
 where:
 - `function-name` a function of this name will be created. it will also be used
@@ -132,7 +131,7 @@ and it creates:
 
 as a convenience, it also accepts:
 
-`const <function-name>: <type-tuple> = [<str>, ...]`
+`fn <function-name> -> <type-tuple> for [<str>, ...]`
 
 where:
 - `function-name`, `type-tuple` are the same as above
@@ -170,11 +169,11 @@ try to handle more of the parsing with a more sophisticated version of
 impl Parse for LookupThingByStr {
     fn parse(input: ParseStream) -> Result<Self> {
         let visibility: Visibility = input.parse()?;
-        input.parse::<Token![const]>()?;
+        input.parse::<Token![fn]>()?;
         let name: Ident = input.parse()?;
-        input.parse::<Token![:]>()?;
+        input.parse::<Token![->]>()?;
         let type_tuple: TypeTuple = input.parse()?;
-        input.parse::<Token![=]>()?;
+        input.parse::<Token![for]>()?;
         let init: ExprArray = input.parse()?;
         input.parse::<Token![;]>()?;
         Ok(LookupThingByStr {
